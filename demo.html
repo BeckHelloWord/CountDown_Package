@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <p id="timeDom"></p>
+    <p id="timeDom2"></p>
+    <script>
+        function CountDown(dom, timer) {
+            this.timer = timer;
+            this.dom = dom;
+            this.timerId = null;
+        }
+        CountDown.prototype = {
+            init: function () {
+                this.getTimeDiff(new Date(this.getTime()).getTime(), new Date(this.timer).getTime());
+            },
+            getTime: function () {
+				//注意，只有跑起服务才能获取服务器时间
+                var http_request = null;
+                if (window.ActiveXObject) {
+                    http_request = new ActiveXObject('Microsoft.XMLHTTP');
+                } else if (window.XMLHttpRequest) {
+                    http_request = new XMLHttpRequest();
+                }
+                http_request.open('HEAD', '.', false);
+                http_request.send(null);
+                return new Date(http_request.getResponseHeader('Date')).getTime();
+            },
+            getTimeDiff: function (startTime, endTime) {
+                var mill = endTime - startTime,
+                    timerId = setInterval(this.countTime(mill), 1000);
+            },
+            countTime: function (mill) {
+                var that = this;
+                console.log(that)
+                return function () {
+                    mill -= 1000;
+                    if (mill <= 0) {
+                        //时间截止
+                        clearInterval(this.timerId);
+                        that.dom.innerText = '倒计时结束';
+                        return false;
+                    }
+
+                    var iDay = parseInt(mill / 86400000); //取天，一天为86400000毫秒
+                    var iHour = parseInt((mill % 86400000) / 3600000); //取小时，一小时3600000毫秒
+                    var iMinute = parseInt(mill % 86400000 % 3600000 / 60000); //取分，一分钟60000毫秒
+                    var iSecond = parseInt(mill % 86400000 % 3600000 % 60000 / 1000); //取秒，一秒1000毫秒
+                    that.dom.innerText = iDay + '天' + iHour + '小时' + iMinute + '分' + iSecond + '秒';
+                }
+            }
+        }
+        var cd = new CountDown(document.getElementById('timeDom'), '2019-09-21 22:35:00');
+        cd.init();
+
+        var cd2 = new CountDown(document.getElementById('timeDom2'), '2017-09-21 22:35:00');
+        cd2.init();
+    </script>
+</body>
+
+</html>
